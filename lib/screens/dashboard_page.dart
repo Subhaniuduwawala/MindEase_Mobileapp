@@ -38,7 +38,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hour = DateTime.now().hour;
-    String greeting = hour < 12
+    final greeting = hour < 12
         ? 'Good Morning'
         : hour < 17
         ? 'Good Afternoon'
@@ -47,77 +47,82 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // App Bar with gradient
           SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
+            expandedHeight: 420,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: isDark
-                        ? [Colors.teal.shade700, Colors.teal.shade900]
-                        : [Colors.teal.shade400, Colors.teal.shade700],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset('assets/image9.jpg', fit: BoxFit.cover),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: isDark
+                            ? [
+                                Colors.black.withOpacity(0.6),
+                                Colors.teal.shade900.withOpacity(0.8),
+                              ]
+                            : [
+                                Colors.teal.withOpacity(0.6),
+                                Colors.teal.shade700.withOpacity(0.8),
+                              ],
+                      ),
+                    ),
                   ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.white.withOpacity(0.3),
-                              child: Icon(
-                                Icons.person,
-                                size: 35,
-                                color: Colors.white,
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.white.withOpacity(0.3),
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 34,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    greeting,
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400,
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      greeting,
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.85),
+                                        fontSize: 15,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    _userName,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
+                                    Text(
+                                      _userName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              icon: const Icon(
+                              const Icon(
                                 Icons.notifications_outlined,
                                 color: Colors.white,
                               ),
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
             actions: [
@@ -126,9 +131,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserSettingsPage(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const UserSettingsPage()),
                   );
                 },
               ),
@@ -137,65 +140,53 @@ class _DashboardPageState extends State<DashboardPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsPage(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const SettingsPage()),
                   );
                 },
               ),
             ],
           ),
 
-          // Main Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Streak Card
                   _buildStreakCard(isDark),
-                  const SizedBox(height: 20),
-
-                  // Daily Affirmation
-                  _buildAffirmationCard(isDark),
                   const SizedBox(height: 24),
+                  _buildAffirmationCard(isDark),
+                  const SizedBox(height: 28),
 
-                  // Quick Actions
-                  Text(
+                  const Text(
                     'Quick Actions',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
 
-                  // Action Grid
                   GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisCount: 2,
-                    crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 1.1,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.05,
                     children: [
                       _buildActionCard(
-                        'Daily Affirmations',
+                        'Affirmations',
                         Icons.format_quote,
                         Colors.purple,
                         () => _navigateToTab(0),
                       ),
                       _buildActionCard(
-                        'Relaxation Music',
+                        'Relax Music',
                         Icons.headphones,
                         Colors.blue,
                         () => _navigateToTab(1),
                       ),
                       _buildActionCard(
-                        'Journal Entry',
-                        Icons.book,
+                        'Journal',
+                        Icons.menu_book,
                         Colors.orange,
                         () => _navigateToTab(2),
                       ),
@@ -207,16 +198,11 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
 
-                  // Wellness Insights
-                  Text(
+                  const SizedBox(height: 28),
+                  const Text(
                     'Your Wellness',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
 
@@ -227,14 +213,12 @@ class _DashboardPageState extends State<DashboardPage> {
                           'Stats',
                           Icons.bar_chart,
                           Colors.teal,
-                          () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const StatsPage(),
-                              ),
-                            );
-                          },
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const StatsPage(),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -243,19 +227,16 @@ class _DashboardPageState extends State<DashboardPage> {
                           'Achievements',
                           Icons.emoji_events,
                           Colors.amber,
-                          () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AchievementsPage(),
-                              ),
-                            );
-                          },
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AchievementsPage(),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -269,57 +250,33 @@ class _DashboardPageState extends State<DashboardPage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [Colors.orange.shade700, Colors.deepOrange.shade800]
-              : [Colors.orange.shade400, Colors.deepOrange.shade600],
-        ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        gradient: LinearGradient(colors: [Colors.orange, Colors.deepOrange]),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.local_fire_department,
-              size: 40,
-              color: Colors.white,
-            ),
+          const Icon(
+            Icons.local_fire_department,
+            size: 42,
+            color: Colors.white,
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$_currentStreak Day Streak!',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$_currentStreak Day Streak',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'You\'re doing amazing! Keep it up!',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const Text(
+                'Consistency builds peace',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ],
           ),
         ],
       ),
@@ -328,43 +285,37 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildAffirmationCard(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: isDark ? Colors.grey[850] : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: const [BoxShadow(blurRadius: 10, color: Colors.black12)],
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.format_quote,
-            size: 40,
-            color: isDark ? Colors.tealAccent : Colors.teal,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _dailyAffirmation,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              fontStyle: FontStyle.italic,
-              color: isDark ? Colors.white : Colors.black87,
-              height: 1.5,
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Image.asset(
+              'assets/image10.jpg',
+              height: 120,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            'Daily Affirmation',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const Icon(Icons.format_quote, color: Colors.teal, size: 36),
+                const SizedBox(height: 12),
+                Text(
+                  _dailyAffirmation,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -379,44 +330,34 @@ class _DashboardPageState extends State<DashboardPage> {
     VoidCallback onTap,
   ) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [color.withOpacity(0.7), color.withOpacity(0.9)],
+        child: Stack(
+          children: [
+            Positioned(
+              right: -20,
+              bottom: -20,
+              child: Opacity(
+                opacity: 0.15,
+                child: Image.asset('assets/image10.jpg', width: 100),
+              ),
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 32, color: Colors.white),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 34, color: color),
+                  const SizedBox(height: 10),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -429,11 +370,9 @@ class _DashboardPageState extends State<DashboardPage> {
     VoidCallback onTap,
   ) {
     return Card(
-      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -457,7 +396,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void _navigateToTab(int index) {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomePage(initialTab: index)),
+      MaterialPageRoute(builder: (_) => HomePage(initialTab: index)),
     );
   }
 }
