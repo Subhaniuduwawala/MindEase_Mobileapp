@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/settings_page.dart';
+import '../screens/user_settings_page.dart';
 import '../screens/stats_page.dart';
 import '../screens/achievements_page.dart';
 import '../screens/home_page.dart';
@@ -40,8 +41,8 @@ class _DashboardPageState extends State<DashboardPage> {
     String greeting = hour < 12
         ? 'Good Morning'
         : hour < 17
-            ? 'Good Afternoon'
-            : 'Good Evening';
+        ? 'Good Afternoon'
+        : 'Good Evening';
 
     return Scaffold(
       body: CustomScrollView(
@@ -105,8 +106,10 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.notifications_outlined,
-                                  color: Colors.white),
+                              icon: const Icon(
+                                Icons.notifications_outlined,
+                                color: Colors.white,
+                              ),
                               onPressed: () {},
                             ),
                           ],
@@ -119,12 +122,24 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.person_outline),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UserSettingsPage(),
+                    ),
+                  );
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const SettingsPage()),
+                      builder: (context) => const SettingsPage(),
+                    ),
                   );
                 },
               ),
@@ -216,7 +231,8 @@ class _DashboardPageState extends State<DashboardPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const StatsPage()),
+                                builder: (context) => const StatsPage(),
+                              ),
                             );
                           },
                         ),
@@ -231,8 +247,8 @@ class _DashboardPageState extends State<DashboardPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      const AchievementsPage()),
+                                builder: (context) => const AchievementsPage(),
+                              ),
                             );
                           },
                         ),
@@ -357,7 +373,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildActionCard(
-      String title, IconData icon, Color color, VoidCallback onTap) {
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -371,10 +391,7 @@ class _DashboardPageState extends State<DashboardPage> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                color.withOpacity(0.7),
-                color.withOpacity(0.9),
-              ],
+              colors: [color.withOpacity(0.7), color.withOpacity(0.9)],
             ),
           ),
           child: Column(
@@ -406,7 +423,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildInsightCard(
-      String title, IconData icon, Color color, VoidCallback onTap) {
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -436,9 +457,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void _navigateToTab(int index) {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => HomePage(initialTab: index),
-      ),
+      MaterialPageRoute(builder: (context) => HomePage(initialTab: index)),
     );
   }
 }
