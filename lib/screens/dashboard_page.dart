@@ -34,207 +34,33 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hour = DateTime.now().hour;
-    final greeting = hour < 12
-        ? 'Good Morning'
-        : hour < 17
-        ? 'Good Afternoon'
-        : 'Good Evening';
-
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 420,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset('assets/image9.jpg', fit: BoxFit.cover),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: isDark
-                            ? [
-                                Colors.black.withOpacity(0.6),
-                                Colors.teal.shade900.withOpacity(0.8),
-                              ]
-                            : [
-                                Colors.teal.withOpacity(0.6),
-                                Colors.teal.shade700.withOpacity(0.8),
-                              ],
-                      ),
-                    ),
-                  ),
-                  SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 30,
-                                backgroundColor: Colors.white.withOpacity(0.3),
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 34,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      greeting,
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.85),
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    Text(
-                                      _userName,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(
-                                Icons.notifications_outlined,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.person_outline),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const UserSettingsPage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SettingsPage()),
-                  );
-                },
-              ),
-            ],
-          ),
-
+          _buildHeroAppBar(),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildStreakCard(isDark),
-                  const SizedBox(height: 24),
-                  _buildAffirmationCard(isDark),
-                  const SizedBox(height: 28),
+                  _buildStreakCard(),
+                  const SizedBox(height: 30),
 
-                  const Text(
-                    'Quick Actions',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
+                  _sectionTitle("How MindWell Works"),
+                  _buildHowItWorks(),
 
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 1.05,
-                    children: [
-                      _buildActionCard(
-                        'Affirmations',
-                        Icons.format_quote,
-                        Colors.purple,
-                        () => _navigateToTab(0),
-                      ),
-                      _buildActionCard(
-                        'Relax Music',
-                        Icons.headphones,
-                        Colors.blue,
-                        () => _navigateToTab(1),
-                      ),
-                      _buildActionCard(
-                        'Journal',
-                        Icons.menu_book,
-                        Colors.orange,
-                        () => _navigateToTab(2),
-                      ),
-                      _buildActionCard(
-                        'Track Mood',
-                        Icons.mood,
-                        Colors.pink,
-                        () => _navigateToTab(3),
-                      ),
-                    ],
-                  ),
+                  const SizedBox(height: 30),
+                  _sectionTitle("Daily Affirmation"),
+                  _buildAffirmationCard(),
 
-                  const SizedBox(height: 28),
-                  const Text(
-                    'Your Wellness',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 30),
+                  _sectionTitle("Quick Actions"),
+                  _buildQuickActionsWithImages(),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildInsightCard(
-                          'Stats',
-                          Icons.bar_chart,
-                          Colors.teal,
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const StatsPage(),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildInsightCard(
-                          'Achievements',
-                          Icons.emoji_events,
-                          Colors.amber,
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AchievementsPage(),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  const SizedBox(height: 30),
+                  _sectionTitle("Your Wellness"),
+                  _buildWellnessRow(),
                 ],
               ),
             ),
@@ -244,113 +70,62 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildStreakCard(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(colors: [Colors.orange, Colors.deepOrange]),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.local_fire_department,
-            size: 42,
-            color: Colors.white,
+  // 🔹 HERO APP BAR
+  Widget _buildHeroAppBar() {
+    return SliverAppBar(
+      expandedHeight: 380,
+      pinned: true,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.person_outline),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const UserSettingsPage()),
           ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$_currentStreak Day Streak',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                'Consistency builds peace',
-                style: TextStyle(color: Colors.white70),
-              ),
-            ],
+        ),
+        IconButton(
+          icon: const Icon(Icons.settings_outlined),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SettingsPage()),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAffirmationCard(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey[850] : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [BoxShadow(blurRadius: 10, color: Colors.black12)],
-      ),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: Image.asset(
-              'assets/image10.jpg',
-              height: 120,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                const Icon(Icons.format_quote, color: Colors.teal, size: 36),
-                const SizedBox(height: 12),
-                Text(
-                  _dailyAffirmation,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: InkWell(
-        onTap: onTap,
-        child: Stack(
+        ),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
           children: [
-            Positioned(
-              right: -20,
-              bottom: -20,
-              child: Opacity(
-                opacity: 0.15,
-                child: Image.asset('assets/image10.jpg', width: 100),
+            Image.asset('assets/image9.jpg', fit: BoxFit.cover),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.6),
+                    Colors.teal.withOpacity(0.8),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
-            Center(
+            Padding(
+              padding: const EdgeInsets.all(20),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(icon, size: 34, color: color),
-                  const SizedBox(height: 10),
+                  const Text(
+                    "Feel Heard, Heal Better",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    "Welcome back, $_userName",
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 ],
               ),
@@ -361,29 +136,277 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildInsightCard(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
+  // 🔹 SECTION TITLE
+  Widget _sectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+    );
+  }
+
+  // 🔹 HOW IT WORKS (LIKE YOUR IMAGE)
+  Widget _buildHowItWorks() {
+    return Column(
+      children: [
+        _infoStep(
+          "Step 1: Check in Yourself",
+          "Understand your emotions",
+          'assets/image11.jpg',
+        ),
+        _infoStep(
+          "Step 2: Chat with Support",
+          "Get guided help anytime",
+          'assets/image12.jpg',
+        ),
+        _infoStep(
+          "Step 3: Track Your Growth",
+          "See progress over time",
+          'assets/image13.jpg',
+        ),
+      ],
+    );
+  }
+
+  Widget _infoStep(String title, String subtitle, String image) {
     return Card(
+      margin: const EdgeInsets.symmetric(vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                image,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🔹 STREAK CARD
+  Widget _buildStreakCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.orange, Colors.deepOrange],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.local_fire_department,
+            color: Colors.white,
+            size: 40,
+          ),
+          const SizedBox(width: 16),
+          Text(
+            "$_currentStreak Day Streak",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 AFFIRMATION
+  Widget _buildAffirmationCard() {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Image.asset(
+              'assets/image10.jpg',
+              height: 140,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              _dailyAffirmation,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 QUICK ACTIONS
+  Widget _buildQuickActionsWithImages() {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 1,
+      children: [
+        _imageActionCard(
+          title: "Affirmations",
+          icon: Icons.format_quote,
+          image: "assets/image1.jpg",
+          onTap: () => _navigateToTab(0),
+        ),
+        _imageActionCard(
+          title: "Relax Music",
+          icon: Icons.headphones,
+          image: "assets/image2.jpg",
+          onTap: () => _navigateToTab(1),
+        ),
+        _imageActionCard(
+          title: "Journal",
+          icon: Icons.menu_book,
+          image: "assets/image3.jpg",
+          onTap: () => _navigateToTab(2),
+        ),
+        _imageActionCard(
+          title: "Track Mood",
+          icon: Icons.mood,
+          image: "assets/image4.jpg",
+          onTap: () => _navigateToTab(3),
+        ),
+      ],
+    );
+  }
+
+  Widget _imageActionCard({
+    required String title,
+    required IconData icon,
+    required String image,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(image, fit: BoxFit.cover),
+
+            // Dark overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.25),
+                    Colors.black.withOpacity(0.65),
+                  ],
+                ),
+              ),
+            ),
+
+            // Content
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 36, color: Colors.white),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionTile(String title, IconData icon, int index) {
+    return InkWell(
+      onTap: () => _navigateToTab(index),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 36, color: Colors.teal),
+              const SizedBox(height: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 WELLNESS
+  Widget _buildWellnessRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: _wellnessTile("Stats", Icons.bar_chart, const StatsPage()),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _wellnessTile(
+            "Achievements",
+            Icons.emoji_events,
+            const AchievementsPage(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _wellnessTile(String title, IconData icon, Widget page) {
+    return InkWell(
+      onTap: () =>
+          Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              Icon(icon, size: 36, color: color),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Icon(icon, size: 36, color: Colors.teal),
+              const SizedBox(height: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         ),

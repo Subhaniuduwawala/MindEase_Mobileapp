@@ -15,39 +15,25 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   final List<OnboardingContent> _pages = [
     OnboardingContent(
-      icon: Icons.spa,
+      imagePath: 'assets/image11.jpg',
       title: 'Welcome to MindEase',
       description:
           'Your personal mental wellness companion. Take care of your mind, one day at a time.',
       color: Colors.teal,
     ),
     OnboardingContent(
-      icon: Icons.format_quote,
+      imagePath: 'assets/image12.jpg',
       title: 'Daily Affirmations',
       description:
           'Start your day with positive affirmations that uplift and inspire you.',
       color: Colors.purple,
     ),
     OnboardingContent(
-      icon: Icons.music_note,
+      imagePath: 'assets/image13.jpg',
       title: 'Relaxation Music',
       description:
           'Listen to calming music and sounds to reduce stress and find peace.',
       color: Colors.blue,
-    ),
-    OnboardingContent(
-      icon: Icons.book,
-      title: 'Journal Your Thoughts',
-      description:
-          'Express yourself through journaling. Track your journey and reflect on your growth.',
-      color: Colors.orange,
-    ),
-    OnboardingContent(
-      icon: Icons.mood,
-      title: 'Track Your Mood',
-      description:
-          'Monitor your emotional well-being and discover patterns in your mental health.',
-      color: Colors.pink,
     ),
   ];
 
@@ -68,7 +54,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button
             if (_currentPage < _pages.length - 1)
               Align(
                 alignment: Alignment.topRight,
@@ -78,21 +63,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
               ),
 
-            // Page content
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
+                itemCount: _pages.length,
                 onPageChanged: (index) {
                   setState(() => _currentPage = index);
                 },
-                itemCount: _pages.length,
                 itemBuilder: (context, index) {
                   return _buildPage(_pages[index]);
                 },
               ),
             ),
 
-            // Page indicators
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -102,7 +85,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ),
             const SizedBox(height: 24),
 
-            // Navigation button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
@@ -145,19 +127,20 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   Widget _buildPage(OnboardingContent content) {
     return Padding(
-      padding: const EdgeInsets.all(32.0),
+      padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: content.color.withOpacity(0.1),
-              shape: BoxShape.circle,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.asset(
+              content.imagePath,
+              height: 260,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
-            child: Icon(content.icon, size: 100, color: content.color),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 40),
 
           Text(
             content.title,
@@ -205,13 +188,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class OnboardingContent {
-  final IconData icon;
+  final String imagePath;
   final String title;
   final String description;
   final Color color;
 
   OnboardingContent({
-    required this.icon,
+    required this.imagePath,
     required this.title,
     required this.description,
     required this.color,
