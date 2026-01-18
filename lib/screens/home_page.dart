@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../services/affirmation_service.dart';
 import '../services/music_service.dart';
 import '../services/journal_service.dart';
@@ -9,6 +10,7 @@ import '../screens/profile_page.dart';
 import '../screens/settings_page.dart';
 import '../screens/stats_page.dart';
 import '../screens/achievements_page.dart';
+import '../screens/dashboard_page.dart';
 
 class HomePage extends StatefulWidget {
   final int initialTab;
@@ -34,7 +36,22 @@ class _HomePageState extends State<HomePage> {
     _selectedIndex = widget.initialTab;
   }
 
-  void _onTab(int index) => setState(() => _selectedIndex = index);
+  @override
+  void dispose() {
+    _musicService.dispose();
+    super.dispose();
+  }
+
+  void _onTab(int index) {
+    if (index == 0) {
+      // Home tab - navigate to DashboardPage
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const DashboardPage()),
+      );
+    } else {
+      setState(() => _selectedIndex = index - 1);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,12 +83,13 @@ class _HomePageState extends State<HomePage> {
         drawer: _buildDrawer(theme),
         body: _buildBody(),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
+          currentIndex: _selectedIndex + 1,
           onTap: _onTab,
           selectedItemColor: theme.colorScheme.primary,
           unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
           items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(
               icon: Icon(Icons.format_quote_rounded),
               label: 'Affirm',
@@ -211,13 +229,123 @@ class _HomePageState extends State<HomePage> {
             final t = tracks[i];
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: const Icon(Icons.headphones),
-                title: Text(t.title),
-                subtitle: Text(t.duration.toString()),
-                trailing: IconButton(
-                  icon: const Icon(Icons.play_arrow),
-                  onPressed: () => _musicService.playTrack(t),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.headphones,
+                          size: 28,
+                          color: Colors.teal,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                t.title,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                t.duration.toString().split('.').first,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        StreamBuilder<PlayerState>(
+                          stream: t.audioPlayer.onPlayerStateChanged,
+                          builder: (context, snapshot) {
+                            final isPlaying =
+                                snapshot.data == PlayerState.playing;
+                            return IconButton(
+                              icon: Icon(
+                                isPlaying ? Icons.pause : Icons.play_arrow,
+                                color: Colors.teal,
+                              ),
+                              onPressed: () async {
+                                await _musicService.playTrack(t);
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    StreamBuilder<PlayerState>(
+                      stream: t.audioPlayer.onPlayerStateChanged,
+                      builder: (context, stateSnapshot) {
+                        final isPlaying =
+                            stateSnapshot.data == PlayerState.playing ||
+                            stateSnapshot.data == PlayerState.paused;
+                        if (!isPlaying) return const SizedBox.shrink();
+                        return Column(
+                          children: [
+                            const SizedBox(height: 12),
+                            StreamBuilder<Duration>(
+                              stream: t.audioPlayer.onPositionChanged,
+                              builder: (context, posSnapshot) {
+                                final position =
+                                    posSnapshot.data ?? Duration.zero;
+                                return Column(
+                                  children: [
+                                    Slider(
+                                      value: position.inSeconds.toDouble(),
+                                      max: t.duration.inSeconds.toDouble(),
+                                      onChanged: (value) async {
+                                        await _musicService.seek(
+                                          t,
+                                          Duration(seconds: value.toInt()),
+                                        );
+                                      },
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            position
+                                                .toString()
+                                                .split('.')
+                                                .first,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Text(
+                                            t.duration
+                                                .toString()
+                                                .split('.')
+                                                .first,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             );

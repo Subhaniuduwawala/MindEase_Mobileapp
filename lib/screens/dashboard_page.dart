@@ -16,8 +16,8 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   String _userName = 'User';
   int _currentStreak = 7;
-  String _todayMood = 'Great';
   String _dailyAffirmation = 'You are capable of amazing things';
+  int _selectedTab = 0;
 
   @override
   void initState() {
@@ -30,8 +30,35 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() {
       _userName = prefs.getString('user_name') ?? 'User';
       _currentStreak = prefs.getInt('current_streak') ?? 7;
-      _todayMood = prefs.getString('today_mood') ?? 'Great';
     });
+  }
+
+  void _onTabTapped(int index) {
+    setState(() => _selectedTab = index);
+    if (index == 0) {
+      // Home tab - stay on dashboard
+      return;
+    } else if (index == 1) {
+      // Affirm tab
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage(initialTab: 0)),
+      );
+    } else if (index == 2) {
+      // Music tab
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage(initialTab: 1)),
+      );
+    } else if (index == 3) {
+      // Journal tab
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage(initialTab: 2)),
+      );
+    } else if (index == 4) {
+      // Mood tab
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage(initialTab: 3)),
+      );
+    }
   }
 
   @override
@@ -259,6 +286,32 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedTab,
+        onTap: _onTabTapped,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.format_quote_rounded),
+            label: 'Affirm',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.music_note_rounded),
+            label: 'Music',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book_rounded),
+            label: 'Journal',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sentiment_satisfied_alt),
+            label: 'Mood',
           ),
         ],
       ),
