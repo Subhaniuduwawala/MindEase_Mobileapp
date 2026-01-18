@@ -16,7 +16,6 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   String _userName = 'User';
   int _currentStreak = 7;
-  String _todayMood = 'Great';
   String _dailyAffirmation = 'You are capable of amazing things';
 
   @override
@@ -30,7 +29,6 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() {
       _userName = prefs.getString('user_name') ?? 'User';
       _currentStreak = prefs.getInt('current_streak') ?? 7;
-      _todayMood = prefs.getString('today_mood') ?? 'Great';
     });
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_service.dart';
 import '../screens/dashboard_page.dart';
 import '../screens/signup_page.dart';
 import '../screens/forgot_password_page.dart';
@@ -18,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _rememberMe = false;
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -30,37 +33,57 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // Save remember me preference
-      if (_rememberMe) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('saved_email', _emailController.text);
-        await prefs.setBool('remember_me', true);
-      }
-
-      // Simulate login delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+      try {
+        // Firebase login
+        final user = await _authService.login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
+
+        // Save remember me preference
+        if (_rememberMe && mounted) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('saved_email', _emailController.text);
+          await prefs.setBool('remember_me', true);
+        }
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const DashboardPage()),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.message ?? 'Login failed'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
 
   void _handleSocialLogin(String provider) async {
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-
+    
     if (mounted) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$provider login coming soon!')));
-      // For now, go to home page
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$provider login coming soon!')),
       );
     }
   }
