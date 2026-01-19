@@ -29,13 +29,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: 'YOUR_WEB_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-    databaseURL: 'https://YOUR_PROJECT_ID.firebaseio.com',
-    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    apiKey: "AIzaSyAFtpTFtDbfBpZpRa5O1FOoBOg6IdC0kfM",
+    authDomain: "mindease-5d5c5.firebaseapp.com",
+    projectId: "mindease-5d5c5",
+    storageBucket: "mindease-5d5c5.firebasestorage.app",
+    messagingSenderId: "18549681545",
+    appId: "1:18549681545:web:d7632a84d2c5fb8b0d0558",
+    measurementId: "G-ECQFX9ZXCK",
   );
 
   static const FirebaseOptions android = FirebaseOptions(

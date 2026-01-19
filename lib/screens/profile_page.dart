@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart';
 import '../screens/login_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -10,8 +11,10 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final _authService = AuthService();
   String _userName = 'User';
   String _userEmail = 'user@mindease.com';
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -20,11 +23,38 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userName = prefs.getString('user_name') ?? 'User';
-      _userEmail = prefs.getString('user_email') ?? 'user@mindease.com';
-    });
+    try {
+      final currentUser = _authService.currentUser;
+      if (currentUser != null) {
+        // Get user profile from Firestore
+        final userProfile = await _authService.getUserProfile(currentUser.uid);
+
+        if (userProfile != null) {
+          setState(() {
+            _userName = userProfile['name'] ?? 'User';
+            _userEmail = userProfile['email'] ?? 'user@mindease.com';
+            _isLoading = false;
+          });
+        } else {
+          // Fallback to Firebase auth user email
+          setState(() {
+            _userName = currentUser.displayName ?? 'User';
+            _userEmail = currentUser.email ?? 'user@mindease.com';
+            _isLoading = false;
+          });
+        }
+      } else {
+        // Not logged in, use defaults
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _handleLogout() async {
@@ -47,14 +77,22 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (confirmed == true && mounted) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      try {
+        await _authService.signOut();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
 
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-        );
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false,
+          );
+        }
+      } catch (e) {
+        print('Error logging out: $e');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Logout failed: $e')));
       }
     }
   }
@@ -62,6 +100,13 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Profile'), centerTitle: true),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile'), centerTitle: true),
@@ -89,6 +134,33 @@ class _ProfilePageState extends State<ProfilePage> {
             Text(
               _userEmail,
               style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 24),
+
+            // Profile Info Card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Account Information',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildInfoRow('Name', _userName),
+                      const SizedBox(height: 12),
+                      _buildInfoRow('Email', _userEmail),
+                    ],
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -226,6 +298,29 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.end,
+          ),
+        ),
+      ],
     );
   }
 

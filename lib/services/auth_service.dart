@@ -18,10 +18,8 @@ class AuthService {
     required String name,
   }) async {
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       // Create user profile in Firestore
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
@@ -61,7 +59,10 @@ class AuthService {
   // Get user profile from Firestore
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     try {
-      DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+      DocumentSnapshot doc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get();
       return doc.data() as Map<String, dynamic>?;
     } catch (e) {
       print('Error fetching user profile: $e');
