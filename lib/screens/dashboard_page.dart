@@ -356,25 +356,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _actionTile(String title, IconData icon, int index) {
-    return InkWell(
-      onTap: () => _navigateToTab(index),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 36, color: Colors.teal),
-              const SizedBox(height: 8),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   // 🔹 WELLNESS
   Widget _buildWellnessRow() {
     return Row(

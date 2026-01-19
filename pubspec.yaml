@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.5
-  audioplayers: ^4.0.1
+  audioplayers: 4.1.0
   path: ^1.9.0
   shared_preferences: ^2.1.1
   firebase_core: ^3.6.0
@@ -27,6 +27,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/
+    - assets/audio/audio1.mp3
+    - assets/audio/audio2.mp3
+    - assets/audio/audio3.mp3
+    - assets/audio/audio4.mp3 
+    - assets/audio/audio5.mp3
     - assets/image1.jpg
     - assets/image2.jpg
     - assets/image3.jpg
@@ -40,3 +45,11 @@ flutter:
     - assets/image11.jpg
     - assets/image12.jpg
     - assets/image13.jpg
+    - assets/image14.jpg
+    - assets/image15.jpg
+    - assets/image16.jpg
+    - assets/image17.jpg
+    - assets/image18.jpg    
+    - assets/image19.jpg
+    - assets/image20.jpg
+    - assets/image21.jpg

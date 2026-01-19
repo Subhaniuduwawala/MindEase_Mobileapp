@@ -9,6 +9,8 @@ import '../screens/profile_page.dart';
 import '../screens/settings_page.dart';
 import '../screens/stats_page.dart';
 import '../screens/achievements_page.dart';
+import '../screens/dashboard_page.dart';
+import '../models/affirmation.dart';
 
 class HomePage extends StatefulWidget {
   final int initialTab;
@@ -20,21 +22,44 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool _isDark = false;
+  String _musicMood = 'All';
 
-  final _affirmationService = AffirmationService();
-  final _musicService = MusicService();
-  final _journalService = JournalService();
-  final _moodService = MoodService();
+  final AffirmationService _affirmationService = AffirmationService();
+  final MusicService _musicService = MusicService();
+  final JournalService _journalService = JournalService();
+  final MoodService _moodService = MoodService();
 
   late int _selectedIndex;
+  late Affirmation _currentAffirmation;
+  String _selectedMood = 'All';
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialTab;
+    _currentAffirmation = _affirmationService.getDailyAffirmation();
   }
 
   void _onTab(int index) => setState(() => _selectedIndex = index);
+
+  void _getNewAffirmation() {
+    setState(() {
+      if (_selectedMood == 'All') {
+        _currentAffirmation = _affirmationService.getRandomAffirmation();
+      } else {
+        _currentAffirmation = _affirmationService.getAffirmationByMood(
+          _selectedMood,
+        );
+      }
+    });
+  }
+
+  void _saveAffirmation() {
+    _affirmationService.saveAffirmation(_currentAffirmation);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Affirmation saved to your profile')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,11 +77,31 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.dashboard_rounded),
+            tooltip: 'Dashboard',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DashboardPage()),
+              );
+            },
+          ),
           title: const Text(
             'MindEase',
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.person_rounded),
+              tooltip: 'Profile',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+              },
+            ),
             IconButton(
               icon: Icon(_isDark ? Icons.light_mode : Icons.dark_mode),
               onPressed: () => setState(() => _isDark = !_isDark),
@@ -109,9 +154,9 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 CircleAvatar(
                   radius: 32,
                   backgroundColor: Colors.white,
@@ -157,81 +202,266 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ================= BODY =================
+
   Widget _buildBody() {
     switch (_selectedIndex) {
       case 0:
-        final a = _affirmationService.getDailyAffirmation();
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.spa, size: 48, color: Colors.teal),
-                    const SizedBox(height: 24),
-                    Text(
-                      a.text,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '${a.date.toLocal()}'.split(' ')[0],
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                    const SizedBox(height: 24),
-                    FilledButton.icon(
-                      onPressed: () => setState(() {}),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Refresh'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-
+        return _affirmationPage(); // ORIGINAL
       case 1:
-        final tracks = _musicService.getAvailableTracks();
-        return ListView.builder(
-          padding: const EdgeInsets.all(12),
-          itemCount: tracks.length,
-          itemBuilder: (context, i) {
-            final t = tracks[i];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: const Icon(Icons.headphones),
-                title: Text(t.title),
-                subtitle: Text(t.duration.toString()),
-                trailing: IconButton(
-                  icon: const Icon(Icons.play_arrow),
-                  onPressed: () => _musicService.playTrack(t),
-                ),
-              ),
-            );
-          },
-        );
-
+        return _musicPage(); // ENHANCED
       case 2:
         return JournalView(journalService: _journalService);
-
       case 3:
         return MoodView(moodService: _moodService);
-
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  // ================= ORIGINAL AFFIRMATION PAGE (UNCHANGED) =================
+
+  Widget _affirmationPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.asset(
+              _currentAffirmation.image,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            _currentAffirmation.text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: Text(
+              '${_currentAffirmation.category} • ${_currentAffirmation.author}',
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ),
+          const SizedBox(height: 25),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton.icon(
+                onPressed: _getNewAffirmation,
+                icon: const Icon(Icons.refresh),
+                label: const Text('New'),
+              ),
+              ElevatedButton.icon(
+                onPressed: _saveAffirmation,
+                icon: const Icon(Icons.favorite_border),
+                label: const Text('Save'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 35),
+          const Text(
+            'How are you feeling today?',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            children: [
+              _moodChip('All'),
+              _moodChip('Mindfulness'),
+              _moodChip('Strength'),
+              _moodChip('Growth'),
+              _moodChip('Patience'),
+            ],
+          ),
+          const SizedBox(height: 35),
+          const Text(
+            'Daily Motivation',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 15),
+          _motivationTile(
+            Icons.self_improvement,
+            'Take 3 deep breaths and relax',
+          ),
+          _motivationTile(Icons.nature_people, 'Spend 5 minutes outside'),
+          _motivationTile(Icons.edit_note, 'Write one positive thought'),
+        ],
+      ),
+    );
+  }
+
+  // ================= MUSIC PAGE =================
+
+  Widget _musicPage() {
+    final allTracks = _musicService.getAvailableTracks();
+    final tracks = _musicMood == 'All'
+        ? allTracks
+        : allTracks.where((t) => t.mood == _musicMood).toList();
+
+    return Stack(
+      children: [
+        Column(
+          children: [
+            _musicMoodChips(),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: tracks.length,
+                itemBuilder: (context, i) {
+                  final t = tracks[i];
+                  final isPlaying =
+                      _musicService.currentTrack == t &&
+                      _musicService.isPlaying;
+
+                  return Container(
+                    height: 160,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      image: DecorationImage(
+                        image: AssetImage(t.imagePath),
+                        fit: BoxFit.cover,
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withOpacity(0.4),
+                          BlendMode.darken,
+                        ),
+                      ),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        t.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${t.mood} • ${t.duration.inMinutes} min',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      trailing: IconButton(
+                        iconSize: 42,
+                        icon: Icon(
+                          isPlaying ? Icons.pause_circle : Icons.play_circle,
+                          color: Colors.white,
+                        ),
+                        onPressed: () async {
+                          await _musicService.playTrack(t);
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        if (_musicService.currentTrack != null) _miniMusicPlayer(),
+      ],
+    );
+  }
+
+  Widget _musicMoodChips() {
+    final moods = ['All', 'Calm', 'Focus', 'Nature'];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: moods.map((mood) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: ChoiceChip(
+              label: Text(mood),
+              selected: _musicMood == mood,
+              onSelected: (_) => setState(() => _musicMood = mood),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _miniMusicPlayer() {
+    final track = _musicService.currentTrack!;
+    final isPlaying = _musicService.isPlaying;
+
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: const BoxDecoration(
+          color: Colors.teal,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                track.imagePath,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                track.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                isPlaying ? Icons.pause : Icons.play_arrow,
+                color: Colors.white,
+                size: 32,
+              ),
+              onPressed: () async {
+                await _musicService.playTrack(track);
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _moodChip(String mood) {
+    return ChoiceChip(
+      label: Text(mood),
+      selected: _selectedMood == mood,
+      onSelected: (_) {
+        setState(() {
+          _selectedMood = mood;
+          _getNewAffirmation();
+        });
+      },
+    );
+  }
+
+  Widget _motivationTile(IconData icon, String text) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ListTile(leading: Icon(icon, size: 30), title: Text(text)),
+    );
   }
 }

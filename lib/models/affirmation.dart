@@ -1,7 +1,15 @@
 class Affirmation {
-  String text;
-  DateTime date;
-  Affirmation({required this.text, DateTime? date}) : date = date ?? DateTime.now();
-  @override
-  String toString() => 'Affirmation(text: $text, date: $date)';
+  final String text;
+  final String category;
+  final String author;
+  final String image;
+  final DateTime date;
+
+  Affirmation({
+    required this.text,
+    required this.category,
+    required this.author,
+    required this.image,
+    required this.date,
+  });
 }
