@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/dashboard_page.dart';
 import '../screens/signup_page.dart';
 import '../screens/forgot_password_page.dart';
+import '../services/firebase_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -37,31 +39,69 @@ class _LoginPageState extends State<LoginPage> {
         await prefs.setBool('remember_me', true);
       }
 
-      // Simulate login delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+      try {
+        await FirebaseService.signInWithEmail(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const DashboardPage()),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
+        }
       }
     }
   }
 
   void _handleSocialLogin(String provider) async {
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$provider login coming soon!')));
-      // For now, go to home page
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
-      );
+    try {
+      if (provider == 'Google') {
+        final cred = await FirebaseService.signInWithGoogle();
+        if (cred != null && mounted) {
+          setState(() => _isLoading = false);
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const DashboardPage()),
+          );
+          return;
+        }
+      }
+      // Other providers not implemented yet
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$provider login coming soon!')));
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message ?? e.code)));
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
