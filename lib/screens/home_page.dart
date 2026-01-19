@@ -3,7 +3,6 @@ import '../services/affirmation_service.dart';
 import '../services/music_service.dart';
 import '../services/journal_service.dart';
 import '../services/mood_service.dart';
-import '../widgets/journal_view.dart';
 import '../widgets/mood_view.dart';
 import '../screens/profile_page.dart';
 import '../screens/settings_page.dart';
@@ -11,6 +10,7 @@ import '../screens/stats_page.dart';
 import '../screens/achievements_page.dart';
 import '../screens/dashboard_page.dart';
 import '../models/affirmation.dart';
+import '../models/journal_entry.dart';
 
 class HomePage extends StatefulWidget {
   final int initialTab;
@@ -33,11 +33,43 @@ class _HomePageState extends State<HomePage> {
   late Affirmation _currentAffirmation;
   String _selectedMood = 'All';
 
+  //  Background animation
+  int _bgIndex = 0;
+  final List<String> _bgImages = [
+    'assets/image21.jpg',
+    'assets/image20.jpg',
+    'assets/image19.jpg',
+  ];
+
+  // ================= JOURNAL STATE =================
+  final TextEditingController _journalCtrl = TextEditingController();
+  String _journalMood = '😌 Calm';
+  double _journalIntensity = 3;
+
+  final List<String> _journalMoods = [
+    '😄 Happy',
+    '😌 Calm',
+    '😔 Sad',
+    '😡 Angry',
+    '😴 Tired',
+  ];
+  // =================================================
+
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialTab;
     _currentAffirmation = _affirmationService.getDailyAffirmation();
+
+    // Loop background every 6 seconds
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 6));
+      if (!mounted) return false;
+      setState(() {
+        _bgIndex = (_bgIndex + 1) % _bgImages.length;
+      });
+      return true;
+    });
   }
 
   void _onTab(int index) => setState(() => _selectedIndex = index);
@@ -211,12 +243,157 @@ class _HomePageState extends State<HomePage> {
       case 1:
         return _musicPage(); // ENHANCED
       case 2:
-        return JournalView(journalService: _journalService);
+        return _journalPage();
       case 3:
         return MoodView(moodService: _moodService);
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _journalPage() {
+    final entries = _journalService.loadAll().reversed.toList();
+
+    return Stack(
+      children: [
+        // 🌄 Animated Background
+        AnimatedSwitcher(
+          duration: const Duration(seconds: 2),
+          child: Container(
+            key: ValueKey(_bgIndex),
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(_bgImages[_bgIndex]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+
+        // Dark overlay for readability
+        Container(color: Colors.black.withOpacity(0.35)),
+
+        // 🌿 Journal Content
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              const Text(
+                'Your Journal',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Mood Chips
+              Wrap(
+                spacing: 8,
+                children: _journalMoods.map((m) {
+                  return ChoiceChip(
+                    label: Text(m),
+                    selected: _journalMood == m,
+                    selectedColor: Colors.teal,
+                    onSelected: (_) => setState(() => _journalMood = m),
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: 12),
+              Text(
+                'Intensity: ${_journalIntensity.toInt()}',
+                style: const TextStyle(color: Colors.white),
+              ),
+
+              Slider(
+                value: _journalIntensity,
+                min: 0,
+                max: 5,
+                divisions: 5,
+                onChanged: (v) => setState(() => _journalIntensity = v),
+              ),
+
+              // ✨ Glass Card
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _journalCtrl,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        hintText: 'Write your thoughts peacefully...',
+                        border: InputBorder.none,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton.icon(
+                        onPressed: _saveJournalEntry,
+                        icon: const Icon(Icons.check),
+                        label: const Text('Save'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              const Text(
+                'Previous Entries',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              ...entries.map(
+                (e) => Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.book),
+                    title: Text(e.title),
+                    subtitle: Text(
+                      e.content,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Text(
+                      '${e.date.day}/${e.date.month}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _saveJournalEntry() {
+    if (_journalCtrl.text.trim().isEmpty) return;
+
+    _journalService.saveEntry(
+      JournalEntry(title: _journalMood, content: _journalCtrl.text),
+    );
+
+    _journalCtrl.clear();
+    setState(() {});
   }
 
   // ================= ORIGINAL AFFIRMATION PAGE (UNCHANGED) =================
