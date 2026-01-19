@@ -3,7 +3,6 @@ import '../services/affirmation_service.dart';
 import '../services/music_service.dart';
 import '../services/journal_service.dart';
 import '../services/mood_service.dart';
-import '../widgets/mood_view.dart';
 import '../screens/profile_page.dart';
 import '../screens/settings_page.dart';
 import '../screens/stats_page.dart';
@@ -11,6 +10,7 @@ import '../screens/achievements_page.dart';
 import '../screens/dashboard_page.dart';
 import '../models/affirmation.dart';
 import '../models/journal_entry.dart';
+import '../models/mood_entry.dart';
 
 class HomePage extends StatefulWidget {
   final int initialTab;
@@ -54,6 +54,15 @@ class _HomePageState extends State<HomePage> {
     '😴 Tired',
   ];
   // =================================================
+// For Mood Page
+int _selectedMoodLevel = 3; // default medium mood
+final List<Map<String, dynamic>> _moodOptions = [
+  {'emoji': '😔', 'level': 1},
+  {'emoji': '😕', 'level': 2},
+  {'emoji': '😌', 'level': 3},
+  {'emoji': '😊', 'level': 4},
+  {'emoji': '😁', 'level': 5},
+];
 
   @override
   void initState() {
@@ -244,8 +253,9 @@ class _HomePageState extends State<HomePage> {
         return _musicPage(); // ENHANCED
       case 2:
         return _journalPage();
-      case 3:
-        return MoodView(moodService: _moodService);
+       case 3: // Mood Page
+        return _moodPage();
+
       default:
         return const SizedBox.shrink();
     }
@@ -547,6 +557,175 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+   Widget _moodPage() {
+  final moods = _moodService.loadAll().reversed.toList(); // latest first
+
+  return Scaffold(
+    backgroundColor: Colors.transparent,
+    floatingActionButton: FloatingActionButton.extended(
+      onPressed: _saveMood,
+      icon: const Icon(Icons.sentiment_satisfied_alt),
+      label: const Text("Save Mood"),
+    ),
+    body: Column(
+      children: [
+        _moodHeader(),
+        const SizedBox(height: 20),
+        _moodSelector(),
+        const SizedBox(height: 20),
+        Expanded(
+          child: moods.isEmpty ? _emptyMoodState() : _moodList(moods),
+        ),
+      ],
+    ),
+  );
+}
+
+// 🌿 Header
+Widget _moodHeader() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(20, 40, 20, 30),
+    decoration: const BoxDecoration(
+      borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+      gradient: LinearGradient(
+        colors: [Color(0xFFB2DFDB), Color(0xFF80CBC4)],
+      ),
+    ),
+    child: const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "My Mood Tracker",
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          "How do you feel today?",
+          style: TextStyle(color: Colors.white70),
+        ),
+      ],
+    ),
+  );
+}
+
+// 😌 Mood Selector
+Widget _moodSelector() {
+  return SizedBox(
+    height: 80,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _moodOptions.length,
+      itemBuilder: (_, i) {
+        final mood = _moodOptions[i];
+        final isSelected = _selectedMoodLevel == mood['level'];
+        return GestureDetector(
+          onTap: () => setState(() => _selectedMoodLevel = mood['level']),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.teal[300] : Colors.teal[50],
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Colors.teal.withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      )
+                    ]
+                  : [],
+            ),
+            child: Center(
+              child: Text(
+                mood['emoji'],
+                style: const TextStyle(fontSize: 32),
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
+
+// 📝 Mood List
+Widget _moodList(List<MoodEntry> moods) {
+  return ListView.builder(
+    padding: const EdgeInsets.all(16),
+    itemCount: moods.length,
+    itemBuilder: (_, i) {
+      final mood = moods[i];
+      return Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        margin: const EdgeInsets.only(bottom: 12),
+        elevation: 4,
+        child: ListTile(
+          leading: Text(
+            mood.emoji,
+            style: const TextStyle(fontSize: 28),
+          ),
+          title: Text(
+            "Mood Level: ${mood.moodLevel}",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(_formatDate(mood.date)),
+        ),
+      );
+    },
+  );
+}
+
+// 🕊 Empty state
+Widget _emptyMoodState() {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.sentiment_satisfied_alt, size: 80, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            "No moods recorded yet",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Track your mood to stay mindful 🌿",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// Save mood function
+void _saveMood() {
+  final mood = _moodOptions[_selectedMoodLevel - 1];
+  _moodService.saveMood(
+    MoodEntry(moodLevel: mood['level'], emoji: mood['emoji']),
+  );
+  setState(() {}); // refresh list
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Mood saved successfully 🌿')),
+  );
+}
+
+// Format date
+String _formatDate(DateTime date) {
+  return "${date.day}/${date.month}/${date.year}";
+}
+
 
   Widget _musicMoodChips() {
     final moods = ['All', 'Calm', 'Focus', 'Nature'];
