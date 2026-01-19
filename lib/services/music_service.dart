@@ -41,7 +41,7 @@ class MusicService {
         _currentlyPlayingTrack = track;
       } else {
         // Play new track
-        await track.audioPlayer.play(AssetSource('audio/${track.audioPath}'));
+        await track.audioPlayer.play(AssetSource(track.audioPath));
         print('Playing: ${track.title}');
         _currentlyPlayingTrack = track;
       }
